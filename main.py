@@ -19,6 +19,20 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
+about_message = """This bot will help you when you are doing monotonous counting.
+
+The author uses this to count reps while exercising.
+
+Known issues:
+
+Feedback: @vyacheslav_kapitonov
+"""
+
+@dp.message_handler(commands=['about'])
+async def about(message: Message):
+
+    await message.answer(text=about_message)
+
 
 @dp.message_handler(commands=['start'])
 async def start(message: Message):
