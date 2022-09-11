@@ -10,6 +10,7 @@ class User(Base):
     userid: int = sa.Column(sa.Integer, primary_key=True)
     result: int = sa.Column(sa.Integer, default=0)
     delta: int = sa.Column(sa.Integer)
+    current_level: int = sa.Column(sa.Integer, default=0)
 
 
     def __repr__(self):

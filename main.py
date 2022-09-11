@@ -26,31 +26,31 @@ async def start(message: Message):
     user = database.get_user_by_userid(userid=message.chat.id)
     markup = kb.create_markup(user=user)
 
-    await message.answer(text='Base setup', reply_markup=markup)
+    await message.answer(text='Hello! Looks like you are new here', reply_markup=markup)
 
 
-@dp.callback_query_handler(lambda c: c.data == 'default')
-async def default(callback_query: CallbackQuery):
-    message = callback_query.message 
+@dp.callback_query_handler(lambda c: c.data == 'setup increment')
+async def setup_increment(callback_query: CallbackQuery):
+    message = callback_query.message
 
-    user = database.create_user(userid=message.chat.id, delta=1)
+    user = database.create_user(userid=message.chat.id, level=1)
     markup = kb.create_markup(user=user)
 
-    await message.answer(text="Let's count it", reply_markup=markup)
+    await message.edit_text(text='Choose increment for you')
+    await message.edit_reply_markup(reply_markup=markup)
 
 
-@dp.message_handler(regexp=r'\/setupdelta')
-async def setupdelta(message: Message):
+@dp.callback_query_handler(lambda c: 'setupdelta' in c.data)
+async def change_increment(callback_query: CallbackQuery):
+    message = callback_query.message
 
-    try:
-        change_delta = int(message.text.split()[-1])
-    except ValueError:
-        await message.answer('Usage for setup: /setup INTEGER')
-    else:
-        user = database.create_user(userid=message.chat.id, delta=change_delta)
-        markup = kb.create_markup(user=user)
+    delta = int(callback_query.data.split()[-1])
 
-        await message.answer(text="Let's count it", reply_markup=markup)
+    user = database.create_user(userid=message.chat.id, delta=delta, level=2)
+    markup = kb.create_markup(user=user)
+
+    await message.edit_text(text="Let's count it")
+    await message.edit_reply_markup(reply_markup=markup)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'plus')
@@ -62,7 +62,6 @@ async def plus(callback_query: CallbackQuery):
     markup = kb.create_markup(user=user)
 
     await message.edit_reply_markup(reply_markup=markup)
-
 
 
 @dp.callback_query_handler(lambda c: c.data == 'refresh_score')

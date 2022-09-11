@@ -5,17 +5,21 @@ import db_session
 from models import User
 
 
-db_session.global_init('sqlite:///:memory:')
+db_session.global_init('sqlite:///count.sqlite')
 
 
-def create_user(userid: int, delta: int) -> User:
+def create_user(userid: int, level: int, delta: int = 0) -> User:
     session = db_session.create_session()
 
     try:
         if user := get_user_by_userid(userid=userid):
+            user.current_level = level
             user.delta = delta
         else:
-            user = User(userid=userid, delta=delta)
+            user = User()
+            user.userid = userid
+            user.delta = delta
+            user.current_level = level
 
         session.add(user)
         session.commit()
@@ -57,13 +61,13 @@ def get_user_by_userid(userid: int) -> User | None:
         session.close()
 
 
-
-
 def refresh_score(userid: int) -> User:
     session = db_session.create_session()
 
     try:
         user = get_user_by_userid(userid=userid)
+        if user.result == 0:
+            return user
         user.result = 0
 
         session.add(user)
