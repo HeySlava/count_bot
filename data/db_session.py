@@ -1,6 +1,8 @@
 import sqlalchemy as sa 
+
 from sqlalchemy import orm
-from models import Base
+
+from data.basemodel import Base
 
 
 def global_init(conn_str: str):
@@ -13,7 +15,6 @@ def global_init(conn_str: str):
 
     _factory = orm.sessionmaker(bind=engine)
 
-    print('before create all')
     Base.metadata.create_all(engine)
     
 
@@ -25,4 +26,3 @@ def create_session():
     session: orm.Session = _factory()
     session.expire_on_commit = False
     return session
-
