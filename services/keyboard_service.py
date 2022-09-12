@@ -82,7 +82,10 @@ class UserKeyboard:
         refresh_score = InlineKeyboardButton(
                 f'Refresh score', callback_data='refresh_score')
 
-        self._kb.row(refresh_score, update_increment_btn)
+        if not self.user.result == 0:
+            self._kb.row(refresh_score)
+        self._kb.row(update_increment_btn)
+
         self._kb.add(result_btn )
         self._kb.row(minus_delta_button, plus_delta_button)
 
