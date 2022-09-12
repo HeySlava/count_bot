@@ -1,3 +1,6 @@
+from typing import Any
+
+
 numbers_to_emoji = {
         0: u'0️⃣',
         1: u'1️⃣',
@@ -26,3 +29,11 @@ def i2e(num: int) -> str:
     for d in digits:
         result += numbers_to_emoji[int(d)]
     return result
+
+
+def try_int(num: Any) -> int | None:
+
+    try:
+        return int(num)
+    except ValueError:
+        return None

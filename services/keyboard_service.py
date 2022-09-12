@@ -27,6 +27,9 @@ class UserKeyboard:
         if self.user.current_state == State.PROGRESS.value:
             return self._progress_markup()
 
+        if self.user.current_state == State.CUSTOM_INCREMENT.value:
+            return self._custom_markup()
+
     def _welcome_markup(self):
 
         setup_increment_btn = InlineKeyboardButton(
@@ -38,16 +41,28 @@ class UserKeyboard:
 
     def _choose_increment_markup(self):
             default_increment_btn = InlineKeyboardButton(
-                    f'Leave default {i2e(1)}', callback_data='setupdelta 1')
+                    f'Leave default: {i2e(1)}', callback_data='setupdelta 1')
 
             delta_five_btn = InlineKeyboardButton(i2e(5), callback_data='setupdelta 5')
             delta_ten_btn = InlineKeyboardButton(i2e(10), callback_data='setupdelta 10')
             delta_fifteen_btn = InlineKeyboardButton(i2e(15), callback_data='setupdelta 15')
 
+            # back_btn = InlineKeyboardButton('Back', callback_data=str(self.user.current_state))
+            custom_increment_btn = InlineKeyboardButton('Type it by your own', callback_data=str(State.CUSTOM_INCREMENT.value))
+
             self._kb.add(default_increment_btn)
-            self._kb.row(delta_five_btn, delta_ten_btn, delta_fifteen_btn)
+            self._kb.add(delta_five_btn)
+            self._kb.add(delta_ten_btn)
+            self._kb.add(delta_fifteen_btn)
+            self._kb.add(custom_increment_btn)
             return self._kb
 
+
+    def _custom_markup(self):
+
+        refresh = InlineKeyboardButton(
+                f'Refresh when you write new value', callback_data='/# TODO')
+        return self._kb.add(refresh)
 
     def _progress_markup(self):
 
@@ -58,7 +73,7 @@ class UserKeyboard:
                 MINUS + i2e(self.user.delta), callback_data='minus')
 
         result_btn = InlineKeyboardButton(
-                i2e(self.user.result), callback_data='something')
+                i2e(self.user.result), callback_data='/# TODO')
 
         plus_delta_button = InlineKeyboardButton(
                 PLUS + i2e(self.user.delta), callback_data='plus')
@@ -66,8 +81,8 @@ class UserKeyboard:
         refresh_score = InlineKeyboardButton(
                 f'Refresh score', callback_data='refresh_score')
 
-        self._kb.add(update_increment_btn)
+        self._kb.row(refresh_score, update_increment_btn)
         self._kb.add(result_btn )
-        self._kb.row(refresh_score, minus_delta_button, plus_delta_button)
+        self._kb.row(minus_delta_button, plus_delta_button)
 
         return self._kb

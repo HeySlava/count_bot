@@ -27,9 +27,9 @@ def create_user(userid: int, state: State) -> User:
 
 def update_user(
         userid: int,
-        state: State = None,
-        delta: int = None,
-        result: int = None
+        state: State | None = None,
+        delta: int | None = None,
+        result: int | None = None
     ) -> User:
     session = db_session.create_session()
 

@@ -17,14 +17,16 @@ from aiogram import executor
 
 from aiogram.types.message import Message
 from aiogram.types import CallbackQuery
-from data.state import State
 
-from data.user import User
+import utils
+
+from data.state import State
 from data import db_session
 
 from services import user_service
 from services import result_service
 from services.keyboard_service import UserKeyboard
+
 
 
 API_TOKEN = '5707661701:AAHTMt4MqjYwpJCDoV-F-6eNoKY65R-omFA'
@@ -40,7 +42,9 @@ dp = Dispatcher(bot)
 STATE_TO_MESSAGE = {
         State.WELCOME.value: 'Hello! Looks like you are new here',
         State.CHOOSE_INCREMENT.value: 'Choose increment for you',
-        State.PROGRESS.value: 'Let\'s count it'
+        State.PROGRESS.value: 'Let\'s count it',
+        State.CUSTOM_INCREMENT.value: 'Choose increment for you'
+        # State.CUSTOM_INCREMENT.value: 'You are choosing custom increment\nYou can abort it by pressing /restart'
     }
 
 def setup_database():
@@ -48,10 +52,10 @@ def setup_database():
     db_session.global_init('sqlite:///count.sqlite')
 
 
-# @dp.message_handler(commands=['about'])
-# async def about(message: Message):
+@dp.message_handler(commands=['about'])
+async def about(message: Message):
 
-#     await message.answer(text=about_message)
+    await message.answer(text=about_message)
 
 
 @dp.message_handler(commands=['start'])
@@ -81,6 +85,20 @@ async def setup_increment(callback_query: CallbackQuery):
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
     await message.edit_text(text=answer_message)
+    await message.edit_reply_markup(reply_markup=markup)
+
+
+@dp.callback_query_handler(lambda c: c.data == str(State.CUSTOM_INCREMENT.value))
+async def custom_increment(callback_query: CallbackQuery):
+    message = callback_query.message
+
+    user = user_service.update_user(
+            userid=message.chat.id,
+            state=State.CUSTOM_INCREMENT)
+
+    markup = UserKeyboard(user).markup
+
+    # await message.edit_text(text=answer_message)
     await message.edit_reply_markup(reply_markup=markup)
 
 
@@ -122,6 +140,36 @@ async def refresh_score(callback_query: CallbackQuery):
 
     await message.edit_reply_markup(reply_markup=markup)
 
+
+@dp.message_handler(lambda message: user_service.get_user_by_userid(userid=message.chat.id).current_state == State.CUSTOM_INCREMENT.value)
+async def setup_value_custom_increment(message: Message):
+
+    delta = utils.try_int(message.text)
+
+    _ = user_service.update_user(
+            userid=message.chat.id,
+            delta=delta,
+            state=State.CUSTOM_INCREMENT)
+    if not delta:
+        answer_message = 'Increment must by INTEGER.\nFor instance 42'
+    else:
+        answer_message = 'Success! Now, you can refresh your keyboard or turn it back /start'
+
+    await message.answer(answer_message)
+
+
+@dp.callback_query_handler(lambda _: True)
+async def nothing(callback_query: CallbackQuery):
+    message = callback_query.message
+
+    user = user_service.update_user(
+            userid=message.chat.id,
+            state=State.PROGRESS)
+    markup = UserKeyboard(user).markup
+    answer_message = STATE_TO_MESSAGE[user.current_state]
+
+    await message.edit_text(text=answer_message)
+    await message.edit_reply_markup(reply_markup=markup)
 
 if __name__ == '__main__':
     setup_database()
