@@ -43,13 +43,13 @@ STATE_TO_MESSAGE = {
         State.WELCOME.value: 'Hello! Looks like you are new here',
         State.CHOOSE_INCREMENT.value: 'Choose increment for you',
         State.PROGRESS.value: 'Let\'s count it',
-        State.CUSTOM_INCREMENT.value: 'Choose increment for you'
+        State.CUSTOM_INCREMENT.value: 'Type increment for you. INTEGER'
         # State.CUSTOM_INCREMENT.value: 'You are choosing custom increment\nYou can abort it by pressing /restart'
     }
 
 def setup_database():
-    # db_session.global_init('sqlite:///:memory:')
-    db_session.global_init('sqlite:///count.sqlite')
+    db_session.global_init('sqlite:///:memory:')
+    # db_session.global_init('sqlite:///count.sqlite')
 
 
 @dp.message_handler(commands=['about'])
@@ -67,6 +67,11 @@ async def start(message: Message):
                 userid=message.chat.id,
                 state=State.WELCOME)
         answer_message = STATE_TO_MESSAGE.get(user.current_state)
+
+    if user.current_state == State.CUSTOM_INCREMENT.value:
+        user = user_service.update_user(
+                userid=message.chat.id,
+                state=State.PROGRESS)
 
     markup = UserKeyboard(user).markup
     answer_message = STATE_TO_MESSAGE[user.current_state]
@@ -97,8 +102,9 @@ async def custom_increment(callback_query: CallbackQuery):
             state=State.CUSTOM_INCREMENT)
 
     markup = UserKeyboard(user).markup
+    answer_message = STATE_TO_MESSAGE[user.current_state]
 
-    # await message.edit_text(text=answer_message)
+    await message.edit_text(text=answer_message)
     await message.edit_reply_markup(reply_markup=markup)
 
 
@@ -146,14 +152,18 @@ async def setup_value_custom_increment(message: Message):
 
     delta = utils.try_int(message.text)
 
+    if not delta:
+        answer_message = 'Increment must by INTEGER.\nFor instance 42'
+        state = State.CUSTOM_INCREMENT
+    else:
+        answer_message = 'Success! Now, you can refresh your keyboard or turn it back /start'
+        state = State.PROGRESS
+
+
     _ = user_service.update_user(
             userid=message.chat.id,
             delta=delta,
-            state=State.CUSTOM_INCREMENT)
-    if not delta:
-        answer_message = 'Increment must by INTEGER.\nFor instance 42'
-    else:
-        answer_message = 'Success! Now, you can refresh your keyboard or turn it back /start'
+            state=state)
 
     await message.answer(answer_message)
 

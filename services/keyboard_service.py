@@ -28,7 +28,7 @@ class UserKeyboard:
             return self._progress_markup()
 
         if self.user.current_state == State.CUSTOM_INCREMENT.value:
-            return self._custom_markup()
+            return self._custom_increment_markup()
 
     def _welcome_markup(self):
 
@@ -41,13 +41,13 @@ class UserKeyboard:
 
     def _choose_increment_markup(self):
             default_increment_btn = InlineKeyboardButton(
-                    f'Leave default: {i2e(1)}', callback_data='setupdelta 1')
+                    f'Default: {i2e(1)}', callback_data='setupdelta 1')
 
             delta_five_btn = InlineKeyboardButton(i2e(5), callback_data='setupdelta 5')
             delta_ten_btn = InlineKeyboardButton(i2e(10), callback_data='setupdelta 10')
             delta_fifteen_btn = InlineKeyboardButton(i2e(15), callback_data='setupdelta 15')
 
-            # back_btn = InlineKeyboardButton('Back', callback_data=str(self.user.current_state))
+            back_btn = InlineKeyboardButton(f'Leave current: {i2e(self.user.delta)}', callback_data=f'setupdelta {self.user.delta}')
             custom_increment_btn = InlineKeyboardButton('Type it by your own', callback_data=str(State.CUSTOM_INCREMENT.value))
 
             self._kb.add(default_increment_btn)
@@ -55,10 +55,11 @@ class UserKeyboard:
             self._kb.add(delta_ten_btn)
             self._kb.add(delta_fifteen_btn)
             self._kb.add(custom_increment_btn)
+            self._kb.add(back_btn)
             return self._kb
 
 
-    def _custom_markup(self):
+    def _custom_increment_markup(self):
 
         refresh = InlineKeyboardButton(
                 f'Refresh when you write new value', callback_data='/# TODO')
