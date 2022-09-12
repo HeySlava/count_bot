@@ -140,10 +140,8 @@ async def countit(callback_query: CallbackQuery):
             mode=callback_query.data)
     markup = UserKeyboard(user).markup
 
-    if user.result != 0:
-        text = f'Your score: {user.result}'
-        await message.edit_text(text)
-
+    text = f'Your score: {user.result}'
+    await message.edit_text(text)
     await message.edit_reply_markup(reply_markup=markup)
 
 
