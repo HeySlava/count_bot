@@ -1,3 +1,4 @@
-*
-!requirements.txt
-!*.py
+.git
+Dockerfile
+docker-compose
+__pycache__
