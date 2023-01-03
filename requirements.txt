@@ -1,2 +1,4 @@
 aiogram
 sqlalchemy
+pydantic
+python-dotenv
