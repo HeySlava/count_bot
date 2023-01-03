@@ -17,26 +17,25 @@ from aiogram import executor
 from aiogram.types.message import Message
 from aiogram.types import CallbackQuery
 
-from pathlib import Path
 
 import utils
 
 from data.state import State
 from data import db_session
 
+from settings import settings
 from services import user_service
 from services import result_service
 from services.keyboard_service import UserKeyboard
 
 
 
-API_TOKEN = '5707661701:AAHTMt4MqjYwpJCDoV-F-6eNoKY65R-omFA'
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
-bot = Bot(token=API_TOKEN)
+bot = Bot(token=settings.token)
 dp = Dispatcher(bot)
 
 
@@ -50,11 +49,10 @@ STATE_TO_MESSAGE = {
 
 
 def setup_database():
-    DBDIR = Path('db')
-    DBDIR.mkdir(exist_ok=True, parents=True)
-    DBFILE = DBDIR / 'count.sqlite'
-    CONN_STR = f'sqlite:///{DBFILE.as_posix()}'
-    db_session.global_init(CONN_STR)
+    db_session.global_init(
+            conn_str=settings.conn_str,
+            debug=settings.debug,
+        )
 
 
 @dp.message_handler(commands=['about'])

@@ -5,13 +5,13 @@ from sqlalchemy import orm
 from data.basemodel import Base
 
 
-def global_init(conn_str: str):
+def global_init(conn_str: str, debug: bool):
     global _factory
 
     if not conn_str.strip():
         raise Exception('You have to specify conn_str, but your {!r:conn_str}')
 
-    engine = sa.create_engine(conn_str, echo=True)
+    engine = sa.create_engine(conn_str, echo=debug)
 
     _factory = orm.sessionmaker(bind=engine)
 
