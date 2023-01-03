@@ -8,7 +8,6 @@ Feedback: @vyacheslav_kapitonov
 """
 
 
-
 import logging
 
 from aiogram import Bot
@@ -17,6 +16,8 @@ from aiogram import executor
 
 from aiogram.types.message import Message
 from aiogram.types import CallbackQuery
+
+from pathlib import Path
 
 import utils
 
@@ -47,9 +48,13 @@ STATE_TO_MESSAGE = {
         # State.CUSTOM_INCREMENT.value: 'You are choosing custom increment\nYou can abort it by pressing /restart'
     }
 
+
 def setup_database():
-    db_session.global_init('sqlite:///:memory:')
-    # db_session.global_init('sqlite:///count.sqlite')
+    DBDIR = Path('db')
+    DBDIR.mkdir(exist_ok=True, parents=True)
+    DBFILE = DBDIR / 'count.sqlite'
+    CONN_STR = f'sqlite:///{DBFILE.as_posix()}'
+    db_session.global_init(CONN_STR)
 
 
 @dp.message_handler(commands=['about'])
