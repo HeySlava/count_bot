@@ -49,6 +49,15 @@ def setup_database():
         )
 
 
+async def on_startup(dp):
+    setup_database()
+
+    await dp.bot.send_message(
+            chat_id=settings.admin_id,
+            text='Bot has started...',
+        )
+
+
 @dp.message_handler(commands=['about'])
 async def about(message: Message):
 
@@ -177,5 +186,8 @@ async def nothing(c: CallbackQuery):
 
 
 if __name__ == '__main__':
-    setup_database()
-    executor.start_polling(dp)
+    executor.start_polling(
+            dp,
+            on_startup=on_startup,
+            relax=1,
+        )

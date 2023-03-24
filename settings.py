@@ -3,7 +3,8 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
-    token: str
+    token: str = ''
+    admin_id: int = 0
     conn_str: str
     debug: bool = False
 
