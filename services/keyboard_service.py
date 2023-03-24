@@ -74,7 +74,7 @@ class UserKeyboard:
                 MINUS + i2e(self.user.delta), callback_data='minus')
 
         result_btn = InlineKeyboardButton(
-                i2e(self.user.result), callback_data='/# TODO')
+                i2e(self.user.result), callback_data=str(self.user.result))
 
         plus_delta_button = InlineKeyboardButton(
                 PLUS + i2e(self.user.delta), callback_data='plus')

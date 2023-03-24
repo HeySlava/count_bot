@@ -1,19 +1,16 @@
 import datetime as dt
+
 from data import db_session
 from data.user import User
-from services.user_service import get_user_by_userid
 
 
-def update_result(userid: int, mode: str = None) -> User | None:
+def update_result(userid: int, mode: str = '') -> User:
     session = db_session.create_session()
 
-    user = get_user_by_userid(userid)
-
-    if not user:
-        return None
+    user =  session.query(User).where(User.userid == userid).one()
 
     try:
-        if mode is None:
+        if not mode:
             user.result = 0
         if mode == 'plus':
             user.result += user.delta

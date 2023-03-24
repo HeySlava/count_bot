@@ -13,22 +13,16 @@ import logging
 from aiogram import Bot
 from aiogram import Dispatcher
 from aiogram import executor
-
-from aiogram.types.message import Message
 from aiogram.types import CallbackQuery
-
+from aiogram.types.message import Message
 
 import utils
-
-from data.state import State
 from data import db_session
-
-from settings import settings
-from services import user_service
+from data.state import State
 from services import result_service
+from services import user_service
 from services.keyboard_service import UserKeyboard
-
-
+from settings import settings
 
 
 # Configure logging
@@ -137,6 +131,10 @@ async def countit(callback_query: CallbackQuery):
             mode=callback_query.data)
     markup = UserKeyboard(user).markup
 
+    if user.result != 0:
+        text = f'Your score: {user.result}'
+        await message.edit_text(text)
+
     await message.edit_reply_markup(reply_markup=markup)
 
 
@@ -147,6 +145,7 @@ async def refresh_score(callback_query: CallbackQuery):
     user = result_service.update_result(userid=message.chat.id)
     markup = UserKeyboard(user).markup
 
+    await message.edit_text(STATE_TO_MESSAGE[user.current_state])
     await message.edit_reply_markup(reply_markup=markup)
 
 
@@ -163,26 +162,19 @@ async def setup_value_custom_increment(message: Message):
         state = State.PROGRESS
 
 
-    _ = user_service.update_user(
+    user_service.update_user(
             userid=message.chat.id,
             delta=delta,
-            state=state)
+            state=state,
+        )
 
     await message.answer(answer_message)
 
 
 @dp.callback_query_handler(lambda _: True)
-async def nothing(callback_query: CallbackQuery):
-    message = callback_query.message
+async def nothing(c: CallbackQuery):
+    await c.answer()
 
-    user = user_service.update_user(
-            userid=message.chat.id,
-            state=State.PROGRESS)
-    markup = UserKeyboard(user).markup
-    answer_message = STATE_TO_MESSAGE[user.current_state]
-
-    await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
 
 if __name__ == '__main__':
     setup_database()

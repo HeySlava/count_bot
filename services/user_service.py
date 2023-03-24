@@ -53,7 +53,7 @@ def get_user_by_userid(userid: int) -> User | None:
     session = db_session.create_session()
 
     try:
-        return session.scalars(sa.select(User).filter(User.userid == userid)).first()
+        return session.query(User).where(User.userid == userid).first()
     finally:
         session.close()
 
