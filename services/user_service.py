@@ -56,5 +56,3 @@ def get_user_by_userid(userid: int) -> User | None:
         return session.query(User).where(User.userid == userid).first()
     finally:
         session.close()
-
-

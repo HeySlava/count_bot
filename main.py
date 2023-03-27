@@ -1,13 +1,3 @@
-about_message = """This bot will help you when you are doing monotonous counting.
-
-The author uses this to count reps while exercising.
-
-Known issues:
-
-Feedback: @vyacheslav_kapitonov
-"""
-
-
 import logging
 
 from aiogram import Bot
@@ -17,6 +7,7 @@ from aiogram.types import CallbackQuery
 from aiogram.types.message import Message
 
 import utils
+from static.messages import ABOUT_MESSAGE
 from data import db_session
 from data.state import State
 from services import result_service
@@ -61,7 +52,7 @@ async def on_startup(dp):
 @dp.message_handler(commands=['about'])
 async def about(message: Message):
 
-    await message.answer(text=about_message)
+    await message.answer(text=ABOUT_MESSAGE)
 
 
 @dp.message_handler(commands=['start'])
@@ -156,18 +147,28 @@ async def refresh_score(callback_query: CallbackQuery):
     await message.edit_reply_markup(reply_markup=markup)
 
 
-@dp.message_handler(lambda message: user_service.get_user_by_userid(userid=message.chat.id).current_state == State.CUSTOM_INCREMENT.value)
+@dp.message_handler(lambda _: True)
 async def setup_value_custom_increment(message: Message):
+
+    user = user_service.get_user_by_userid(userid=message.chat.id)
+
+    if not user or not user.current_state == State.CUSTOM_INCREMENT.value:
+        return
 
     delta = utils.try_int(message.text)
 
     if not delta:
-        answer_message = 'Increment must by INTEGER.\nFor instance 42'
+        answer_message = (
+                'Increment must by INTEGER.\n'
+                'For instance 42'
+            )
         state = State.CUSTOM_INCREMENT
     else:
-        answer_message = 'Success! Now, you can refresh your keyboard or turn it back /start'
+        answer_message = (
+                'Success! Now, you can refresh your keyboard '
+                'or turn it back /start'
+            )
         state = State.PROGRESS
-
 
     user_service.update_user(
             userid=message.chat.id,
