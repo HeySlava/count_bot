@@ -7,13 +7,13 @@ from aiogram.types import CallbackQuery
 from aiogram.types.message import Message
 
 import utils
-from static.messages import ABOUT_MESSAGE
 from data import db_session
 from data.state import State
 from services import result_service
 from services import user_service
 from services.keyboard_service import UserKeyboard
 from settings import settings
+from static.messages import ABOUT_MESSAGE
 
 
 # Configure logging
@@ -29,7 +29,9 @@ STATE_TO_MESSAGE = {
         State.CHOOSE_INCREMENT.value: 'Choose increment for you',
         State.PROGRESS.value: 'Let\'s count it',
         State.CUSTOM_INCREMENT.value: 'Type increment for you. INTEGER'
-        # State.CUSTOM_INCREMENT.value: 'You are choosing custom increment\nYou can abort it by pressing /restart'
+        # State.CUSTOM_INCREMENT.value: (
+        #     'You are choosing custom increment\nYou can abort it by pressing /restart'
+        # )
     }
 
 

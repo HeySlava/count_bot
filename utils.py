@@ -13,7 +13,7 @@ numbers_to_emoji = {
         8: u'8️⃣',
         9: u'9️⃣',
     }
-        
+
 
 MINUS = u'➖'
 PLUS = u'➕'

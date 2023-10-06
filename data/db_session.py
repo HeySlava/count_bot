@@ -1,5 +1,4 @@
-import sqlalchemy as sa 
-
+import sqlalchemy as sa
 from sqlalchemy import orm
 
 from data.basemodel import Base
@@ -16,7 +15,7 @@ def global_init(conn_str: str, debug: bool):
     _factory = orm.sessionmaker(bind=engine)
 
     Base.metadata.create_all(engine)
-    
+
 
 def create_session():
 
