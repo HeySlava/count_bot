@@ -1,5 +1,6 @@
-import sqlalchemy as sa
 import datetime as dt
+
+import sqlalchemy as sa
 
 from data.basemodel import Base
 

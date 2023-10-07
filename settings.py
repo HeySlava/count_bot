@@ -1,5 +1,6 @@
-from pydantic import BaseSettings
 from pathlib import Path
+
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -10,8 +11,8 @@ class Settings(BaseSettings):
 
     class Config:
         env_prefix = 'counter_'
-        env_file='.env',
-        env_file_encoding='utf-8'
+        env_file = '.env',
+        env_file_encoding = 'utf-8'
 
 
 DBDIR = Path('db')

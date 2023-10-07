@@ -1,4 +1,4 @@
 aiogram
-sqlalchemy==1.4.*
 pydantic
 python-dotenv
+sqlalchemy==1.4.*

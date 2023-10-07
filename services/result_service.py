@@ -7,7 +7,7 @@ from data.user import User
 def update_result(userid: int, mode: str = '') -> User:
     session = db_session.create_session()
 
-    user =  session.query(User).where(User.userid == userid).one()
+    user = session.query(User).where(User.userid == userid).one()
 
     try:
         if not mode:

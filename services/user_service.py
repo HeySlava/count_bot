@@ -1,9 +1,7 @@
-import sqlalchemy as sa
 import datetime as dt
 
 from data import db_session
 from data.state import State
-
 from data.user import User
 
 
@@ -30,7 +28,7 @@ def update_user(
         state: State | None = None,
         delta: int | None = None,
         result: int | None = None
-    ) -> User:
+) -> User:
     session = db_session.create_session()
 
     try:
