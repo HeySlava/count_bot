@@ -6,6 +6,10 @@ from data.state import State
 from data.user import User
 
 
+class UserNotFoundError(Exception):
+    pass
+
+
 def create_user(userid: int, state: State) -> User:
     session = db_session.create_session()
 
@@ -34,6 +38,8 @@ def update_user(
 
     try:
         user = get_user_by_userid(userid=userid)
+        if not user:
+            raise UserNotFoundError(userid)
         user.delta = delta if delta is not None else user.delta
         user.current_state = state.value if state else user.current_state
         user.result = result if result is not None else user.result
@@ -48,7 +54,7 @@ def update_user(
         session.close()
 
 
-def get_user_by_userid(userid: int) -> User:
+def get_user_by_userid(userid: int) -> Optional[User]:
     session = db_session.create_session()
 
     try:
