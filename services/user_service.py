@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Optional
 
 from data import db_session
 from data.state import State
@@ -25,16 +26,16 @@ def create_user(userid: int, state: State) -> User:
 
 def update_user(
         userid: int,
-        state: State | None = None,
-        delta: int | None = None,
-        result: int | None = None
+        state: Optional[State] = None,
+        delta: Optional[int] = None,
+        result: Optional[int] = None
 ) -> User:
     session = db_session.create_session()
 
     try:
         user = get_user_by_userid(userid=userid)
         user.delta = delta if delta is not None else user.delta
-        user.current_state = state.value if state is not None else user.current_state
+        user.current_state = state.value if state else user.current_state
         user.result = result if result is not None else user.result
         user.update_date = dt.datetime.now()
 
@@ -47,7 +48,7 @@ def update_user(
         session.close()
 
 
-def get_user_by_userid(userid: int) -> User | None:
+def get_user_by_userid(userid: int) -> User:
     session = db_session.create_session()
 
     try:

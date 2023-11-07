@@ -34,7 +34,9 @@ class UserKeyboard:
     def _welcome_markup(self):
 
         setup_increment_btn = InlineKeyboardButton(
-                'Setup increment', callback_data=str(State.CHOOSE_INCREMENT.value))
+                'Setup increment',
+                callback_data=str(State.CHOOSE_INCREMENT.value),
+            )
 
         self._kb.add(setup_increment_btn)
         return self._kb
@@ -43,9 +45,15 @@ class UserKeyboard:
         default_increment_btn = InlineKeyboardButton(
                 f'Default: {i2e(1)}', callback_data='setupdelta 1')
 
-        delta_five_btn = InlineKeyboardButton(i2e(5), callback_data='setupdelta 5')
-        delta_ten_btn = InlineKeyboardButton(i2e(10), callback_data='setupdelta 10')
-        delta_fifteen_btn = InlineKeyboardButton(i2e(15), callback_data='setupdelta 15')
+        delta_five_btn = InlineKeyboardButton(
+                i2e(5), callback_data='setupdelta 5',
+            )
+        delta_ten_btn = InlineKeyboardButton(
+                i2e(10), callback_data='setupdelta 10',
+            )
+        delta_fifteen_btn = InlineKeyboardButton(
+                i2e(15), callback_data='setupdelta 15',
+            )
 
         back_btn = InlineKeyboardButton(
                 f'Leave current: {i2e(self.user.delta)}',
@@ -73,7 +81,9 @@ class UserKeyboard:
     def _progress_markup(self):
 
         update_increment_btn = InlineKeyboardButton(
-                'Change increment', callback_data=str(State.CHOOSE_INCREMENT.value))
+                'Change increment',
+                callback_data=str(State.CHOOSE_INCREMENT.value),
+            )
 
         minus_delta_button = InlineKeyboardButton(
                 MINUS + i2e(self.user.delta), callback_data='minus')

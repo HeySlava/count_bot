@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Optional
 
 
 numbers_to_emoji = {
@@ -31,7 +32,7 @@ def i2e(num: int) -> str:
     return result
 
 
-def try_int(num: Any) -> int | None:
+def try_int(num: Any) -> Optional[int]:
 
     try:
         return int(num)
