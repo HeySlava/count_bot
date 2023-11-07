@@ -1,3 +1,4 @@
+import datetime as dt
 import logging
 
 from aiogram import Bot
@@ -134,7 +135,11 @@ async def countit(callback_query: CallbackQuery):
             mode=callback_query.data)
     markup = UserKeyboard(user).markup
 
-    text = f'Your score: {user.result}'
+    utcnow = dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    text = (
+            f'Your score: {user.result!r}\n'
+            f'UTC time: {utcnow}'
+        )
     await message.edit_text(text)
     await message.edit_reply_markup(reply_markup=markup)
 
