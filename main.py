@@ -29,9 +29,6 @@ STATE_TO_MESSAGE = {
         State.CHOOSE_INCREMENT.value: 'Choose increment for you',
         State.PROGRESS.value: 'Let\'s count it',
         State.CUSTOM_INCREMENT.value: 'Type increment for you. INTEGER'
-        # State.CUSTOM_INCREMENT.value: (
-        #     'You are choosing custom increment\nYou can abort it by pressing /restart'
-        # )
     }
 
 
@@ -78,7 +75,9 @@ async def start(message: Message):
     await message.answer(text=answer_message, reply_markup=markup)
 
 
-@dp.callback_query_handler(lambda c: c.data == str(State.CHOOSE_INCREMENT.value))
+@dp.callback_query_handler(
+        lambda c: c.data == str(State.CHOOSE_INCREMENT.value)
+    )
 async def setup_increment(callback_query: CallbackQuery):
     message = callback_query.message
 
@@ -92,7 +91,9 @@ async def setup_increment(callback_query: CallbackQuery):
     await message.edit_reply_markup(reply_markup=markup)
 
 
-@dp.callback_query_handler(lambda c: c.data == str(State.CUSTOM_INCREMENT.value))
+@dp.callback_query_handler(
+        lambda c: c.data == str(State.CUSTOM_INCREMENT.value)
+    )
 async def custom_increment(callback_query: CallbackQuery):
     message = callback_query.message
 

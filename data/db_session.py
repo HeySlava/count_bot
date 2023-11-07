@@ -4,6 +4,9 @@ from sqlalchemy import orm
 from data.basemodel import Base
 
 
+_factory = None
+
+
 def global_init(conn_str: str, debug: bool):
     global _factory
 
@@ -18,7 +21,7 @@ def global_init(conn_str: str, debug: bool):
 
 
 def create_session():
-
+    global _factory
     if not _factory:
         raise Exception('You must call global_init() before using this method')
 
