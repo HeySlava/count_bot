@@ -32,9 +32,13 @@ def i2e(num: int) -> str:
     return result
 
 
-def try_int(num: Any) -> Optional[int]:
+def try_positive_int(num: Any) -> Optional[int]:
 
     try:
-        return int(num)
+        my_int = int(num)
     except ValueError:
         return None
+
+    if my_int >= 0:
+        return my_int
+    return None

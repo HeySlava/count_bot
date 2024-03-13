@@ -163,11 +163,11 @@ async def setup_value_custom_increment(message: Message):
     if not user or not user.current_state == State.CUSTOM_INCREMENT.value:
         return
 
-    delta = utils.try_int(message.text)
+    delta = utils.try_positive_int(message.text)
 
     if not delta:
         answer_message = (
-                'Increment must by INTEGER.\n'
+                'Increment must by positive INTEGER.\n'
                 'For instance 42'
             )
         state = State.CUSTOM_INCREMENT
