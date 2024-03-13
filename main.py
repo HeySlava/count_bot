@@ -27,7 +27,7 @@ dp = Dispatcher(bot)
 
 STATE_TO_MESSAGE = {
         State.WELCOME.value: 'Hello! Looks like you are new here',
-        State.CHOOSE_INCREMENT.value: 'Choose increment for you',
+        State.CHOOSE_INCREMENT.value: 'Choose an increment for yourself',
         State.PROGRESS.value: 'Let\'s count it',
         State.CUSTOM_INCREMENT.value: 'Type increment for you. INTEGER'
     }
