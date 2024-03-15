@@ -1,9 +1,12 @@
 import datetime as dt
 from typing import Optional
 
+from sqlalchemy.exc import NoResultFound
+
 from data import db_session
 from data.state import State
 from data.user import User
+from exc import UserNotFound
 
 
 class UserNotFoundError(Exception):
@@ -54,10 +57,12 @@ def update_user(
         session.close()
 
 
-def get_user_by_userid(userid: int) -> Optional[User]:
+def get_user_by_userid(userid: int) -> User:
     session = db_session.create_session()
 
     try:
-        return session.query(User).where(User.userid == userid).first()
+        return session.query(User).where(User.userid == userid).one()
+    except NoResultFound:
+        raise UserNotFound
     finally:
         session.close()
