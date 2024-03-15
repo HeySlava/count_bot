@@ -47,13 +47,12 @@ async def handle_new_user(message: Message):
 
 @dp.message_handler(commands=['start'])
 async def start(message: Message):
-
     user = user_service.get_user_by_userid(userid=message.from_user.id)
 
-    if user.current_state == State.CUSTOM_INCREMENT.value:
-        user = user_service.update_user(
-                userid=message.chat.id,
-                state=State.PROGRESS)
+    user = user_service.update_user(
+            userid=message.from_user.id,
+            state=State.PROGRESS,
+        )
 
     markup = UserKeyboard(user).markup
     answer_message = STATE_TO_MESSAGE[user.current_state]
