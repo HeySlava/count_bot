@@ -10,6 +10,7 @@ from aiogram.types.message import Message
 import utils
 from data import db_session
 from data.state import State
+from filters import is_user_stored_before
 from services import result_service
 from services import user_service
 from services.keyboard_service import UserKeyboard
@@ -33,37 +34,21 @@ STATE_TO_MESSAGE = {
     }
 
 
-def setup_database():
-    db_session.global_init(
-            conn_str=settings.conn_str,
-            debug=settings.debug,
+@dp.message_handler(lambda m: not is_user_stored_before(m.from_user.id))
+async def handle_new_user(message: Message):
+    user = user_service.create_user(
+            userid=message.from_user.id,
+            state=State.WELCOME,
         )
-
-
-async def on_startup(dp):
-    setup_database()
-
-    await dp.bot.send_message(
-            chat_id=settings.admin_id,
-            text='Bot has started...',
-        )
-
-
-@dp.message_handler(commands=['about'])
-async def about(message: Message):
-
-    await message.answer(text=ABOUT_MESSAGE)
+    answer_message = STATE_TO_MESSAGE[user.current_state]
+    markup = UserKeyboard(user).markup
+    await message.answer(text=answer_message, reply_markup=markup)
 
 
 @dp.message_handler(commands=['start'])
 async def start(message: Message):
 
-    user = user_service.get_user_by_userid(userid=message.chat.id)
-    if not user:
-        user = user_service.create_user(
-                userid=message.chat.id,
-                state=State.WELCOME)
-        answer_message = STATE_TO_MESSAGE.get(user.current_state)
+    user = user_service.get_user_by_userid(userid=message.from_user.id)
 
     if user.current_state == State.CUSTOM_INCREMENT.value:
         user = user_service.update_user(
@@ -74,6 +59,11 @@ async def start(message: Message):
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
     await message.answer(text=answer_message, reply_markup=markup)
+
+
+@dp.message_handler(commands=['about'])
+async def about(message: Message):
+    await message.answer(text=ABOUT_MESSAGE)
 
 
 @dp.callback_query_handler(
@@ -190,6 +180,21 @@ async def setup_value_custom_increment(message: Message):
 @dp.callback_query_handler(lambda _: True)
 async def nothing(c: CallbackQuery):
     await c.answer()
+
+
+def setup_database():
+    db_session.global_init(
+            conn_str=settings.conn_str,
+            debug=settings.debug,
+        )
+
+
+async def on_startup(dp):
+    setup_database()
+    await dp.bot.send_message(
+            chat_id=settings.admin_id,
+            text='Bot has started...',
+        )
 
 
 if __name__ == '__main__':
