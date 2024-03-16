@@ -1,7 +1,3 @@
-from typing import Any
-from typing import Optional
-
-
 numbers_to_emoji = {
         0: u'0️⃣',
         1: u'1️⃣',
@@ -32,13 +28,12 @@ def i2e(num: int) -> str:
     return result
 
 
-def try_positive_int(num: Any) -> Optional[int]:
-
+def try_positive_int(num: str) -> int:
     try:
         my_int = int(num)
     except ValueError:
-        return None
+        raise
 
-    if my_int >= 0:
-        return my_int
-    return None
+    if my_int <= 0:
+        raise ValueError
+    return my_int

@@ -10,6 +10,8 @@ from aiogram.types.message import Message
 import utils
 from data import db_session
 from data.state import State
+from filters import check_user_custom_increment
+from filters import filter_by_state
 from filters import is_user_stored_before
 from services import result_service
 from services import user_service
@@ -144,35 +146,39 @@ async def refresh_score(callback_query: CallbackQuery):
     await message.edit_reply_markup(reply_markup=markup)
 
 
-@dp.message_handler(lambda _: True)
+@dp.message_handler(
+        lambda m: check_user_custom_increment(m.text),
+        lambda m: filter_by_state(
+            m.from_user.id,
+            State.CUSTOM_INCREMENT,
+        ),
+    )
 async def setup_value_custom_increment(message: Message):
-
-    user = user_service.get_user_by_userid(userid=message.chat.id)
-
-    if not user or not user.current_state == State.CUSTOM_INCREMENT.value:
-        return
-
     delta = utils.try_positive_int(message.text)
-
-    if not delta:
-        answer_message = (
-                'Increment must by positive INTEGER.\n'
-                'For instance 42'
-            )
-        state = State.CUSTOM_INCREMENT
-    else:
-        answer_message = (
-                'Success! Now, you can refresh your keyboard '
-                'or turn it back /start'
-            )
-        state = State.PROGRESS
-
     user_service.update_user(
             userid=message.chat.id,
             delta=delta,
-            state=state,
+            state=State.PROGRESS,
         )
 
+    answer_message = (
+            'Success! Now, you can refresh your keyboard '
+            'or turn it back /start'
+        )
+    await message.answer(answer_message)
+
+
+@dp.message_handler(
+        lambda m: filter_by_state(
+            m.from_user.id,
+            State.CUSTOM_INCREMENT,
+        )
+    )
+async def wrong_user_input(message: Message):
+    answer_message = (
+            'Increment must by positive INTEGER.\n'
+            'For instance 42'
+        )
     await message.answer(answer_message)
 
 
