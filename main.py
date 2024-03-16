@@ -1,3 +1,4 @@
+import asyncio
 import datetime as dt
 import logging
 
@@ -185,6 +186,24 @@ async def wrong_user_input(message: Message):
             'For instance 42'
         )
     await message.answer(answer_message)
+
+
+@dp.message_handler(lambda _: True)
+async def any(m: Message):
+    answer = (
+            "You aren't using this bot correctly. Try again\n"
+            '/start'
+            '\n'
+            '\n'
+            'Your message will be deleted in 10 seconds'
+        )
+    response_message = await m.reply(answer)
+    await asyncio.sleep(10)
+    await bot.delete_message(chat_id=m.chat.id, message_id=m.message_id)
+    await bot.delete_message(
+            chat_id=response_message.chat.id,
+            message_id=response_message.message_id,
+        )
 
 
 @dp.callback_query_handler(lambda _: True)
