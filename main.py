@@ -98,10 +98,9 @@ async def custom_increment(callback_query: CallbackQuery):
             userid=message.chat.id,
             state=State.CUSTOM_INCREMENT)
 
-    kb = init_user_keyboard(user)
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
-    await message.edit_reply_markup(reply_markup=kb.create_markup())
+    await bot.delete_message(message.chat.id, message.message_id)
     await message.answer(text=answer_message)
     await callback_query.answer()
 
