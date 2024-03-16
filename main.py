@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot
 from aiogram import Dispatcher
 from aiogram import executor
+from aiogram.types import BotCommand
 from aiogram.types import CallbackQuery
 from aiogram.types.message import Message
 
@@ -191,6 +192,21 @@ async def nothing(c: CallbackQuery):
     await c.answer()
 
 
+async def set_commands(bot) -> None:
+    commands = [
+        BotCommand(command='/start', description='Start right now'),
+        BotCommand(command='/about', description='Motivation to use it')
+    ]
+    await bot.set_my_commands(commands)
+
+
+async def send_startup_message(bot) -> None:
+    await bot.send_message(
+            chat_id=settings.admin_id,
+            text='Bot has started...',
+        )
+
+
 def setup_database():
     db_session.global_init(
             conn_str=settings.conn_str,
@@ -200,10 +216,8 @@ def setup_database():
 
 async def on_startup(dp):
     setup_database()
-    await dp.bot.send_message(
-            chat_id=settings.admin_id,
-            text='Bot has started...',
-        )
+    await set_commands(dp.bot)
+    await send_startup_message(dp.bot)
 
 
 if __name__ == '__main__':
