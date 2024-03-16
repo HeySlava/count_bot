@@ -32,6 +32,7 @@ class UserKeyboard:
             return self._custom_increment_markup()
 
     def _welcome_markup(self):
+        return self._progress_markup()
 
         setup_increment_btn = InlineKeyboardButton(
                 'Setup increment',
