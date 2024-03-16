@@ -1,9 +1,11 @@
+import asyncio
 import datetime as dt
 import logging
 
 from aiogram import Bot
 from aiogram import Dispatcher
 from aiogram import executor
+from aiogram.types import BotCommand
 from aiogram.types import CallbackQuery
 from aiogram.types.message import Message
 
@@ -13,9 +15,9 @@ from data.state import State
 from filters import check_user_custom_increment
 from filters import filter_by_state
 from filters import is_user_stored_before
+from kb import init_user_keyboard
 from services import result_service
 from services import user_service
-from services.keyboard_service import UserKeyboard
 from settings import settings
 from static.messages import ABOUT_MESSAGE
 
@@ -32,7 +34,10 @@ STATE_TO_MESSAGE = {
         State.WELCOME.value: 'Hello! Looks like you are new here',
         State.CHOOSE_INCREMENT.value: 'Choose an increment for yourself',
         State.PROGRESS.value: 'Let\'s count it',
-        State.CUSTOM_INCREMENT.value: 'Type increment for you. INTEGER'
+        State.CUSTOM_INCREMENT.value: (
+            'Choose an increment for '
+            'yourself. INTEGER'
+        )
     }
 
 
@@ -43,8 +48,8 @@ async def handle_new_user(message: Message):
             state=State.WELCOME,
         )
     answer_message = STATE_TO_MESSAGE[user.current_state]
-    markup = UserKeyboard(user).markup
-    await message.answer(text=answer_message, reply_markup=markup)
+    kb = init_user_keyboard(user)
+    await message.answer(text=answer_message, reply_markup=kb.create_markup())
 
 
 @dp.message_handler(commands=['start'])
@@ -56,10 +61,9 @@ async def start(message: Message):
             state=State.PROGRESS,
         )
 
-    markup = UserKeyboard(user).markup
     answer_message = STATE_TO_MESSAGE[user.current_state]
-
-    await message.answer(text=answer_message, reply_markup=markup)
+    kb = init_user_keyboard(user)
+    await message.answer(text=answer_message, reply_markup=kb.create_markup())
 
 
 @dp.message_handler(commands=['about'])
@@ -76,11 +80,12 @@ async def setup_increment(callback_query: CallbackQuery):
     user = user_service.update_user(
             userid=message.chat.id,
             state=State.CHOOSE_INCREMENT)
-    markup = UserKeyboard(user).markup
+
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
+    kb = init_user_keyboard(user)
     await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(
@@ -93,11 +98,11 @@ async def custom_increment(callback_query: CallbackQuery):
             userid=message.chat.id,
             state=State.CUSTOM_INCREMENT)
 
-    markup = UserKeyboard(user).markup
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
-    await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await bot.delete_message(message.chat.id, message.message_id)
+    await message.answer(text=answer_message)
+    await callback_query.answer()
 
 
 @dp.callback_query_handler(lambda c: 'setupdelta' in c.data)
@@ -110,11 +115,11 @@ async def change_increment(callback_query: CallbackQuery):
             userid=message.chat.id,
             delta=delta,
             state=State.PROGRESS)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
     await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(lambda c: c.data in ('plus', 'minus'))
@@ -124,7 +129,7 @@ async def countit(callback_query: CallbackQuery):
     user = result_service.update_result(
             userid=message.chat.id,
             mode=callback_query.data)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
 
     utcnow = dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     text = (
@@ -132,7 +137,7 @@ async def countit(callback_query: CallbackQuery):
             f'UTC time: {utcnow}'
         )
     await message.edit_text(text)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(lambda c: c.data == 'refresh_score')
@@ -140,10 +145,10 @@ async def refresh_score(callback_query: CallbackQuery):
     message = callback_query.message
 
     user = result_service.update_result(userid=message.chat.id)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
 
     await message.edit_text(STATE_TO_MESSAGE[user.current_state])
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.message_handler(
@@ -182,9 +187,42 @@ async def wrong_user_input(message: Message):
     await message.answer(answer_message)
 
 
+@dp.message_handler(lambda _: True)
+async def any(m: Message):
+    answer = (
+            "You aren't using this bot correctly. Try again\n"
+            '/start'
+            '\n'
+            '\n'
+            'Your message will be deleted in 10 seconds'
+        )
+    response_message = await m.reply(answer)
+    await asyncio.sleep(10)
+    await bot.delete_message(chat_id=m.chat.id, message_id=m.message_id)
+    await bot.delete_message(
+            chat_id=response_message.chat.id,
+            message_id=response_message.message_id,
+        )
+
+
 @dp.callback_query_handler(lambda _: True)
 async def nothing(c: CallbackQuery):
     await c.answer()
+
+
+async def set_commands(bot) -> None:
+    commands = [
+        BotCommand(command='/start', description='Start right now'),
+        BotCommand(command='/about', description='Motivation to use it')
+    ]
+    await bot.set_my_commands(commands)
+
+
+async def send_startup_message(bot) -> None:
+    await bot.send_message(
+            chat_id=settings.admin_id,
+            text='Bot has started...',
+        )
 
 
 def setup_database():
@@ -196,10 +234,8 @@ def setup_database():
 
 async def on_startup(dp):
     setup_database()
-    await dp.bot.send_message(
-            chat_id=settings.admin_id,
-            text='Bot has started...',
-        )
+    await set_commands(dp.bot)
+    await send_startup_message(dp.bot)
 
 
 if __name__ == '__main__':
