@@ -13,9 +13,9 @@ from data.state import State
 from filters import check_user_custom_increment
 from filters import filter_by_state
 from filters import is_user_stored_before
+from kb import init_user_keyboard
 from services import result_service
 from services import user_service
-from services.keyboard_service import UserKeyboard
 from settings import settings
 from static.messages import ABOUT_MESSAGE
 
@@ -46,8 +46,8 @@ async def handle_new_user(message: Message):
             state=State.WELCOME,
         )
     answer_message = STATE_TO_MESSAGE[user.current_state]
-    markup = UserKeyboard(user).markup
-    await message.answer(text=answer_message, reply_markup=markup)
+    kb = init_user_keyboard(user)
+    await message.answer(text=answer_message, reply_markup=kb.create_markup())
 
 
 @dp.message_handler(commands=['start'])
@@ -59,10 +59,9 @@ async def start(message: Message):
             state=State.PROGRESS,
         )
 
-    markup = UserKeyboard(user).markup
     answer_message = STATE_TO_MESSAGE[user.current_state]
-
-    await message.answer(text=answer_message, reply_markup=markup)
+    kb = init_user_keyboard(user)
+    await message.answer(text=answer_message, reply_markup=kb.create_markup())
 
 
 @dp.message_handler(commands=['about'])
@@ -79,11 +78,12 @@ async def setup_increment(callback_query: CallbackQuery):
     user = user_service.update_user(
             userid=message.chat.id,
             state=State.CHOOSE_INCREMENT)
-    markup = UserKeyboard(user).markup
+
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
+    kb = init_user_keyboard(user)
     await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(
@@ -96,11 +96,12 @@ async def custom_increment(callback_query: CallbackQuery):
             userid=message.chat.id,
             state=State.CUSTOM_INCREMENT)
 
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
-    await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
+    await message.answer(text=answer_message)
+    await callback_query.answer()
 
 
 @dp.callback_query_handler(lambda c: 'setupdelta' in c.data)
@@ -113,11 +114,11 @@ async def change_increment(callback_query: CallbackQuery):
             userid=message.chat.id,
             delta=delta,
             state=State.PROGRESS)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
     answer_message = STATE_TO_MESSAGE[user.current_state]
 
     await message.edit_text(text=answer_message)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(lambda c: c.data in ('plus', 'minus'))
@@ -127,7 +128,7 @@ async def countit(callback_query: CallbackQuery):
     user = result_service.update_result(
             userid=message.chat.id,
             mode=callback_query.data)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
 
     utcnow = dt.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     text = (
@@ -135,7 +136,7 @@ async def countit(callback_query: CallbackQuery):
             f'UTC time: {utcnow}'
         )
     await message.edit_text(text)
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.callback_query_handler(lambda c: c.data == 'refresh_score')
@@ -143,10 +144,10 @@ async def refresh_score(callback_query: CallbackQuery):
     message = callback_query.message
 
     user = result_service.update_result(userid=message.chat.id)
-    markup = UserKeyboard(user).markup
+    kb = init_user_keyboard(user)
 
     await message.edit_text(STATE_TO_MESSAGE[user.current_state])
-    await message.edit_reply_markup(reply_markup=markup)
+    await message.edit_reply_markup(reply_markup=kb.create_markup())
 
 
 @dp.message_handler(
